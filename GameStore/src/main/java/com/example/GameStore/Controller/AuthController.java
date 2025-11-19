@@ -2,8 +2,6 @@ package com.example.GameStore.Controller;
 
 
 import com.example.GameStore.Dto.AuthRequest;
-import com.example.GameStore.Entity.User;
-import com.example.GameStore.Repository.UserRepository;
 import com.example.GameStore.Service.AuthService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +16,13 @@ import java.util.Map;
 @RequestMapping("api/auth")
 @AllArgsConstructor
 public class AuthController {
-   private final AuthService authService;
+    private final AuthService authService;
 
     @PostMapping("/register")
-    ResponseEntity<Map<String,String>>Register(@RequestBody AuthRequest authRequest){
-
+    ResponseEntity<Map<String, String>> Register(@RequestBody AuthRequest authRequest) {
 
 
         authService.register(authRequest);
-      return ResponseEntity.ok(Map.of("message","success"));
+        return ResponseEntity.ok(Map.of("message", "success"));
     }
 }
