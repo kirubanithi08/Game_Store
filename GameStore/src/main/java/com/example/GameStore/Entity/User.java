@@ -1,23 +1,27 @@
 package com.example.GameStore.Entity;
 
-import jakarta.annotation.Nonnull;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
+@Table(name = "users")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-@Getter
-@Setter
 public class User {
+
     @Id
-    @GeneratedValue
-    Long id;
-    @Nonnull
-    String username;
-    @Nonnull
-    String password;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String password;
+
+    
 }
