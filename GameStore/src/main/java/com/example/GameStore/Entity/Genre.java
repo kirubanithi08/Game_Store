@@ -1,15 +1,20 @@
 package com.example.GameStore.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
-@Table(name = "users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+
+
+public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,13 +22,11 @@ public class User {
 
     @NotBlank
     @Column(nullable = false, unique = true)
-    private String username;
+    private String name;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String password;
+    @ManyToMany(mappedBy = "genres")
+    @JsonIgnore
+    private Set<Game> games;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String role;
+
 }

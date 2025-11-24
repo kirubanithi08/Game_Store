@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -19,7 +18,7 @@ public class JwtUtils {
 
 
     private static final long EXPIRATION = 1000 * 60 * 60 * 24;
-
+    private final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
 
     public String generateToken(String username) {
         return Jwts.builder()
@@ -47,6 +46,10 @@ public class JwtUtils {
         return username.equals(extractedUsername) && !isTokenExpired(token);
     }
 
+    public boolean validateRefreshToken(String refreshToken ){
+        return !isTokenExpired(refreshToken);
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -63,5 +66,14 @@ public class JwtUtils {
                 .getBody();
     }
 
+
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
+                .signWith(key)
+                .compact();
+    }
 
 }

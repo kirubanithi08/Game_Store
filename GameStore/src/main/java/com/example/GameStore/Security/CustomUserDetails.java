@@ -17,17 +17,17 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // or add roles later
+        return List.of();
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();   // ✔ Correct
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();   // ✔ Correct
+        return user.getUsername();
     }
 
     @Override

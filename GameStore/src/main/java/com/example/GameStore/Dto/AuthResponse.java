@@ -1,12 +1,10 @@
 package com.example.GameStore.Dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
     String AccessToken;
 //    String RefreshToken;

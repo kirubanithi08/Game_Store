@@ -36,6 +36,8 @@ public class AuthService {
         user.setUsername(authRequest.getUsername());
         user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 
+        user.setRole("ROLE_USER");
+
         return userRepository.save(user);
     }
 
@@ -49,8 +51,36 @@ public AuthResponse userLogin(AuthRequest authRequest){
             )
     );
 
-    String token=jwtUtils.generateToken(authRequest.getUsername());
+    String accessToken=jwtUtils.generateToken(authRequest.getUsername());
 
-    return new AuthResponse(token);
+    return new AuthResponse(accessToken);
 }
+
+
+    public User registerAdmin(AuthRequest authRequest) {
+        if (userRepository.findByUsername(authRequest.getUsername()).isPresent()) {
+            throw new RuntimeException("Admin username already taken");
+        }
+
+        User admin = new User();
+        admin.setUsername(authRequest.getUsername());
+        admin.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+        admin.setRole("ROLE_ADMIN");
+
+        return userRepository.save(admin);
+    }
+
+
+
+    public boolean userExists(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+
+
+    public String generateRefreshToken(String username) {
+
+        return jwtUtils.generateRefreshToken(username);
+    }
+
 }
