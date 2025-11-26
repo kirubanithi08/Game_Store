@@ -2,6 +2,7 @@ package com.example.GameStore.Controller;
 
 import com.example.GameStore.Dto.AuthRequest;
 import com.example.GameStore.Dto.AuthResponse;
+import com.example.GameStore.Entity.User;
 import com.example.GameStore.Security.JwtUtils;
 import com.example.GameStore.Service.AuthService;
 import lombok.AllArgsConstructor;
@@ -58,13 +59,23 @@ public class AuthController {
         }
 
         String username = jwtUtils.extractUsername(refreshToken);
-
         jwtUtils.validateRefreshToken(refreshToken);
 
         String newAccessToken = jwtUtils.generateToken(username);
 
-        return ResponseEntity.ok(new AuthResponse(newAccessToken));
+
+        User user = authService.getUser(username);
+
+        return ResponseEntity.ok(
+                new AuthResponse(
+                        newAccessToken,
+                        user.getUsername(),
+                        user.getRole()
+                )
+        );
     }
+
+
 
 
     @PostMapping("/logout")
