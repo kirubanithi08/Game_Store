@@ -42,19 +42,26 @@ public class AuthService {
     }
 
 
-public AuthResponse userLogin(AuthRequest authRequest){
-    authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                    authRequest.getUsername(),
-                    authRequest.getPassword()
+    public AuthResponse userLogin(AuthRequest authRequest){
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequest.getUsername(),
+                        authRequest.getPassword()
+                )
+        );
 
-            )
-    );
+        User user = userRepository.findByUsername(authRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    String accessToken=jwtUtils.generateToken(authRequest.getUsername());
+        String accessToken = jwtUtils.generateToken(user.getUsername());
 
-    return new AuthResponse(accessToken);
-}
+        return new AuthResponse(
+                accessToken,
+                user.getUsername(),
+                user.getRole()
+        );
+    }
+
 
 
     public User registerAdmin(AuthRequest authRequest) {
