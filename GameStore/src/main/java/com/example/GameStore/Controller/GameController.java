@@ -25,10 +25,20 @@ public class GameController {
     }
 
 
+//    @GetMapping
+//    public List<Game> getAllGames() {
+//        return gameService.getAllGames();
+//    }
+
     @GetMapping
-    public List<Game> getAllGames() {
-        return gameService.getAllGames();
+    public ResponseEntity<?> getGames(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        return ResponseEntity.ok(gameService.getGames(page, size));
     }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Game> getGameById(@PathVariable Long id) {

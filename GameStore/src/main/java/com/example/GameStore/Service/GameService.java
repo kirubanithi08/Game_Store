@@ -5,6 +5,7 @@ import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.Genre;
 import com.example.GameStore.Repository.GameRepository;
 import com.example.GameStore.Repository.GenreRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +40,14 @@ public class GameService {
     }
 
 
-    public List<Game> getAllGames() {
-        return gameRepository.findAll();
+//    public List<Game> getAllGames() {
+//        return gameRepository.findAll();
+//    }
+
+    public Page<Game> getGames(int page, int size) {
+        return gameRepository.findAll(PageRequest.of(page, size));
     }
+
 
     public Optional<Game> getGameById(Long id) {
         return gameRepository.findById(id);
