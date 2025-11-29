@@ -1,8 +1,9 @@
-
 package com.example.GameStore.Security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.http.HttpMethod;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -62,34 +63,34 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/refresh"
-                        ).permitAll()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                .authorizeHttpRequests(auth -> auth
+
+                        // Public auth routes
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
+
+                        // Protected route (needs JWT)
                         .requestMatchers("/api/auth/me").authenticated()
 
-                        .requestMatchers("/api/games/**").permitAll()
-                        .requestMatchers("/api/genres/**").permitAll()
+                        // Public GET access
+                        .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
+                        // PROTECTED WRITE ACCESS (requires JWT)
+                        .requestMatchers(HttpMethod.POST, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").authenticated()
+
+                        // Everything else must be authenticated
                         .anyRequest().authenticated()
                 )
-
-
-
 
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -98,7 +99,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://game-store-lilac-five.vercel.app"
+                "https://game-store-lilac-five.vercel.app" // your Vercel domain
         ));
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -110,6 +111,4 @@ public class SecurityConfig {
 
         return source;
     }
-
 }
-
