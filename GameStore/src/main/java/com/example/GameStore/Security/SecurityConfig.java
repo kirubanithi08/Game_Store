@@ -66,16 +66,23 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Allow unauthenticated access to Game + Genre + Auth APIs
                         .requestMatchers(
-                                "/api/auth/**",
-                                "/api/games/**",
-                                "/api/genres/**"
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/refresh"
                         ).permitAll()
 
+                        .requestMatchers("/api/auth/me").authenticated()
+
+                        .requestMatchers("/api/games/**").permitAll()
+                        .requestMatchers("/api/genres/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
+
+
+
+
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -90,7 +97,8 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "https://game-store-lilac-five.vercel.app"
         ));
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

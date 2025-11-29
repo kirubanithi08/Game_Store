@@ -25,10 +25,7 @@ public class GameController {
     }
 
 
-//    @GetMapping
-//    public List<Game> getAllGames() {
-//        return gameService.getAllGames();
-//    }
+
 
     @GetMapping
     public ResponseEntity<?> getGames(

@@ -49,6 +49,34 @@ public class AuthController {
     }
 
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(@RequestHeader(name = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+        }
+
+        String token = authHeader.replace("Bearer ", "");
+
+
+        String username = jwtUtils.extractUsername(token);
+
+
+        User user = authService.getUser(username);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "username", user.getUsername(),
+                        "role", user.getRole()
+                )
+        );
+    }
+
+
+
+
+
+
+
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(

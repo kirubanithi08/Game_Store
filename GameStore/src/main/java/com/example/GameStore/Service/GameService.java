@@ -40,9 +40,6 @@ public class GameService {
     }
 
 
-//    public List<Game> getAllGames() {
-//        return gameRepository.findAll();
-//    }
 
     public Page<Game> getGames(int page, int size) {
         return gameRepository.findAll(PageRequest.of(page, size));
