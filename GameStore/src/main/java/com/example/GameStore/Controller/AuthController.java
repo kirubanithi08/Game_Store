@@ -32,7 +32,13 @@ public class AuthController {
 
         AuthResponse response = authService.userLogin(authRequest);
 
-        String refreshToken = authService.generateRefreshToken(authRequest.getUsername());
+//        String refreshToken = authService.generateRefreshToken(authRequest.getUsername());
+
+        String refreshToken = jwtUtils.generateRefreshToken(
+                response.getUsername()
+//                response.getRole()
+        );
+
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
@@ -74,10 +80,6 @@ public class AuthController {
 
 
 
-
-
-
-
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(
             @CookieValue(name = "refresh_token", required = false) String refreshToken
@@ -86,13 +88,18 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
+        // Extract username FIRST
         String username = jwtUtils.extractUsername(refreshToken);
         jwtUtils.validateRefreshToken(refreshToken);
 
-        String newAccessToken = jwtUtils.generateToken(username);
-
-
+        // Load user BEFORE TOKEN CREATION
         User user = authService.getUser(username);
+
+        // Now generate new JWT
+        String newAccessToken = jwtUtils.generateToken(
+                username,
+                user.getRole()
+        );
 
         return ResponseEntity.ok(
                 new AuthResponse(
@@ -102,7 +109,6 @@ public class AuthController {
                 )
         );
     }
-
 
 
 

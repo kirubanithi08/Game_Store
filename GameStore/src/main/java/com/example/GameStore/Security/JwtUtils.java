@@ -1,6 +1,5 @@
 package com.example.GameStore.Security;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,46 +15,52 @@ public class JwtUtils {
 
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
+    private static final long ACCESS_EXPIRATION = 1000 * 60 * 60 * 24; // 24h
+    private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 7; // 7 days
 
-    private static final long EXPIRATION = 1000 * 60 * 60 * 24;
-    private final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
+    // =============================
+    //   GENERATE TOKENS
+    // =============================
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)     // ADD ROLE CLAIM
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
                 .signWith(key)
                 .compact();
     }
 
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+//                .claim("role", role)     // ADD ROLE CLAIM
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
+                .signWith(key)
+                .compact();
+    }
+
+    // =============================
+    //   EXTRACT USERNAME & ROLE
+    // =============================
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    // =============================
+    //   CLAIM UTILITIES
+    // =============================
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
-    }
-
-
-    public boolean validateToken(String token, String username) {
-        String extractedUsername = extractUsername(token);
-        return username.equals(extractedUsername) && !isTokenExpired(token);
-    }
-
-    public boolean validateRefreshToken(String refreshToken ){
-        return !isTokenExpired(refreshToken);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     private Claims extractAllClaims(String token) {
@@ -66,14 +71,23 @@ public class JwtUtils {
                 .getBody();
     }
 
+    // =============================
+    //   VALIDATION
+    // =============================
 
-    public String generateRefreshToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
-                .signWith(key)
-                .compact();
+    public boolean validateToken(String token, String username) {
+        return username.equals(extractUsername(token)) && !isTokenExpired(token);
     }
 
+    public boolean validateRefreshToken(String token) {
+        return !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
 }
