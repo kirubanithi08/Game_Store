@@ -17,7 +17,7 @@ public class JwtUtils {
 
     private final Key key;
 
-    // Access & refresh token expirations
+
     private static final long ACCESS_EXPIRATION = 1000L * 60 * 60 * 24; // 24h
     private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 7; // 7 days
 
@@ -26,9 +26,6 @@ public class JwtUtils {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // =============================
-    //   GENERATE TOKENS
-    // =============================
 
     public String generateToken(String username, String role) {
         return Jwts.builder()
@@ -49,9 +46,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    // =============================
-    //   EXTRACT USERNAME & ROLE
-    // =============================
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -61,9 +56,7 @@ public class JwtUtils {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    // =============================
-    //   CLAIM UTILITIES
-    // =============================
+
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
@@ -78,9 +71,7 @@ public class JwtUtils {
                 .getBody();
     }
 
-    // =============================
-    //   VALIDATION
-    // =============================
+
 
     public boolean validateToken(String token, String username) {
         return username.equals(extractUsername(token)) && !isTokenExpired(token);
