@@ -3,7 +3,9 @@ package com.example.GameStore.Security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -13,10 +15,16 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final Key key;
 
-    private static final long ACCESS_EXPIRATION = 1000 * 60 * 60 * 24; // 24h
+    // Access & refresh token expirations
+    private static final long ACCESS_EXPIRATION = 1000L * 60 * 60 * 24; // 24h
     private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 7; // 7 days
+
+    public JwtUtils(@Value("${jwt.secret}") String base64Secret) {
+        byte[] keyBytes = Decoders.BASE64.decode(base64Secret);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // =============================
     //   GENERATE TOKENS
@@ -25,20 +33,19 @@ public class JwtUtils {
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role)     // ADD ROLE CLAIM
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateRefreshToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-//                .claim("role", role)     // ADD ROLE CLAIM
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 

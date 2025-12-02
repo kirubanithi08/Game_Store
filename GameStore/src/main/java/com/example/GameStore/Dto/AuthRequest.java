@@ -2,10 +2,12 @@ package com.example.GameStore.Dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class AuthRequest {
-    String username;
-    String password;
+    private String username;
+    private String password;
 }

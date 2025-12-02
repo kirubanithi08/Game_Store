@@ -5,6 +5,7 @@ import com.example.GameStore.Dto.AuthResponse;
 import com.example.GameStore.Entity.User;
 import com.example.GameStore.Security.JwtUtils;
 import com.example.GameStore.Service.AuthService;
+import io.jsonwebtoken.JwtException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -32,17 +33,13 @@ public class AuthController {
 
         AuthResponse response = authService.userLogin(authRequest);
 
-//        String refreshToken = authService.generateRefreshToken(authRequest.getUsername());
-
         String refreshToken = jwtUtils.generateRefreshToken(
                 response.getUsername()
-//                response.getRole()
         );
-
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(false) // set to true in production (HTTPS)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
                 .sameSite("Strict")
@@ -63,9 +60,7 @@ public class AuthController {
 
         String token = authHeader.replace("Bearer ", "");
 
-
         String username = jwtUtils.extractUsername(token);
-
 
         User user = authService.getUser(username);
 
@@ -77,9 +72,6 @@ public class AuthController {
         );
     }
 
-
-
-
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(
             @CookieValue(name = "refresh_token", required = false) String refreshToken
@@ -88,26 +80,35 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        // Extract username FIRST
-        String username = jwtUtils.extractUsername(refreshToken);
-        jwtUtils.validateRefreshToken(refreshToken);
+        try {
+            // Validate first (this will throw if parse/signature fails)
+            if (!jwtUtils.validateRefreshToken(refreshToken)) {
+                return ResponseEntity.status(401).build();
+            }
 
-        // Load user BEFORE TOKEN CREATION
-        User user = authService.getUser(username);
+            // Extract username after validation
+            String username = jwtUtils.extractUsername(refreshToken);
 
-        // Now generate new JWT
-        String newAccessToken = jwtUtils.generateToken(
-                username,
-                user.getRole()
-        );
+            // Load user BEFORE token creation
+            User user = authService.getUser(username);
 
-        return ResponseEntity.ok(
-                new AuthResponse(
-                        newAccessToken,
-                        user.getUsername(),
-                        user.getRole()
-                )
-        );
+            // Now generate new JWT
+            String newAccessToken = jwtUtils.generateToken(
+                    username,
+                    user.getRole()
+            );
+
+            return ResponseEntity.ok(
+                    new AuthResponse(
+                            newAccessToken,
+                            user.getUsername(),
+                            user.getRole()
+                    )
+            );
+        } catch (JwtException | IllegalArgumentException e) {
+            // Token parsing/validation error
+            return ResponseEntity.status(401).build();
+        }
     }
 
 
@@ -129,6 +130,4 @@ public class AuthController {
                 .header("Set-Cookie", deleteCookie.toString())
                 .body(Map.of("message", "Logged out successfully"));
     }
-
-
 }
