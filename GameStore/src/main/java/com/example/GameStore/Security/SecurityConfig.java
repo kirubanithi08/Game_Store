@@ -81,6 +81,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/games/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/games/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/user/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/user/**").authenticated()
 
                         // Everything else must be authenticated
                         .anyRequest().authenticated()
