@@ -12,8 +12,8 @@ public class Admin {
     @Bean
     CommandLineRunner createDefaultAdmin(AuthService authService) {
         return args -> {
-            if (!authService.userExists("kiruba")) {
-                authService.registerAdmin(new AuthRequest("kiruba", "123"));
+            if (!authService.userExists("goku")) {
+                authService.registerAdmin(new AuthRequest("goku", "123"));
                 System.out.println("Default admin created");
             }
         };
