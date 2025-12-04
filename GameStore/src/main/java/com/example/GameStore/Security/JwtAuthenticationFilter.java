@@ -18,6 +18,7 @@ import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
 
@@ -32,23 +33,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Only skip the public auth endpoints. Keep /api/auth/me protected.
-        if (path.equals("/api/auth/login") || path.equals("/api/auth/register") || path.equals("/api/auth/refresh")) {
+        // These endpoints do NOT need JWT
+        if (path.equals("/api/auth/login")
+                || path.equals("/api/auth/register")
+                || path.equals("/api/auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         final String authHeader = request.getHeader("Authorization");
+
         String token = null;
         String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+
             try {
                 username = jwtUtils.extractUsername(token);
-            } catch (Exception e) {
-                // let the filter continue without authentication; Security will reject protected endpoints
-            }
+            } catch (Exception ignored) {}
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -57,13 +60,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (jwtUtils.validateToken(token, userDetails.getUsername())) {
 
-                // Extract role from JWT instead of DB (keeps it stateless)
+                // Extract role from JWT
                 String role = jwtUtils.extractRole(token);
+
+                // 🚨 ALWAYS normalize: Spring requires ROLE_ prefix
+                if (!role.startsWith("ROLE_")) {
+                    role = "ROLE_" + role;
+                }
+
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails, null, List.of(authority)
+                                userDetails,
+                                null,
+                                List.of(authority)
                         );
 
                 authToken.setDetails(

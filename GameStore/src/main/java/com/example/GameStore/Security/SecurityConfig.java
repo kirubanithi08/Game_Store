@@ -45,10 +45,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
@@ -63,28 +63,27 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-
-                        // Public auth routes
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
-
-                        // Protected route (needs JWT)
-                        .requestMatchers("/api/auth/me").authenticated()
+                        // Public
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh")
+                        .permitAll()
 
                         // Public GET access
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
-                        // PROTECTED WRITE ACCESS (requires JWT)
-                        .requestMatchers(HttpMethod.POST, "/api/games/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/games/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/user/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/user/**").authenticated()
+                        // Admin-only write access
+                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
 
-                        // Everything else must be authenticated
+                        // User info protected
+                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/user/**").authenticated()
+
+                        // Everything else → authenticated
                         .anyRequest().authenticated()
                 )
 
@@ -97,20 +96,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://game-store-lilac-five.vercel.app" // your Vercel domain
+                "https://game-store-lilac-five.vercel.app"
         ));
-
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }
