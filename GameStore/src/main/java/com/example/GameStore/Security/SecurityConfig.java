@@ -69,7 +69,7 @@ public class SecurityConfig {
                         // Public
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh")
                         .permitAll()
-
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public GET access
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()

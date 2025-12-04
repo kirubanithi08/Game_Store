@@ -32,8 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
+        System.out.println("[DEBUG] Incoming request path: " + path);
 
-        // These endpoints do NOT need JWT
+        // Skip public endpoints
         if (path.equals("/api/auth/login")
                 || path.equals("/api/auth/register")
                 || path.equals("/api/auth/refresh")) {
@@ -42,31 +43,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("[DEBUG] Authorization header: " + authHeader);
 
         String token = null;
         String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            System.out.println("[DEBUG] Extracted token: " + token);
 
             try {
                 username = jwtUtils.extractUsername(token);
-            } catch (Exception ignored) {}
+                System.out.println("[DEBUG] Username from token: " + username);
+            } catch (Exception e) {
+                System.out.println("[DEBUG] Failed to extract username: " + e.getMessage());
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            System.out.println("[DEBUG] Loaded user details: " + userDetails.getUsername());
 
             if (jwtUtils.validateToken(token, userDetails.getUsername())) {
-
-                // Extract role from JWT
                 String role = jwtUtils.extractRole(token);
+                System.out.println("[DEBUG] Role from token before normalization: " + role);
 
-                // 🚨 ALWAYS normalize: Spring requires ROLE_ prefix
                 if (!role.startsWith("ROLE_")) {
                     role = "ROLE_" + role;
                 }
+                System.out.println("[DEBUG] Role after normalization: " + role);
 
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
@@ -82,7 +87,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("[DEBUG] SecurityContext authentication set: " + SecurityContextHolder.getContext().getAuthentication());
+            } else {
+                System.out.println("[DEBUG] Token validation failed");
             }
+        } else if (username == null) {
+            System.out.println("[DEBUG] Username is null or authentication already exists");
         }
 
         filterChain.doFilter(request, response);
