@@ -21,7 +21,9 @@ public class GameController {
 
     @PostMapping
     public Game createGame(@RequestBody GameRequest request) {
+        System.out.println("[DEBUG] post game reached");
         return gameService.createGame(request);
+
     }
 
 
