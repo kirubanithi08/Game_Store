@@ -75,11 +75,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
                         // Admin-only write access
-                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
 
-                        // User info protected
+                                // Admin-only write access
+                                .requestMatchers(HttpMethod.POST, "/api/games").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
+
+
+                                // User info protected
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
 
