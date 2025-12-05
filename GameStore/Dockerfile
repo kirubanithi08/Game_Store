@@ -15,4 +15,5 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Bind Spring Boot to 0.0.0.0 so Render can reach it
+ENTRYPOINT ["java","-Dserver.port=8080","-Dserver.address=0.0.0.0","-jar","app.jar"]
