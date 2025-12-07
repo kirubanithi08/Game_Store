@@ -4,28 +4,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.http.HttpMethod;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-
 
 @Configuration
 public class SecurityConfig {
@@ -58,8 +51,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -75,26 +66,24 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/refresh").permitAll()
 
-                        // Public GET endpoints for games (FIXED)
+                        // Public GET endpoints for games
                         .requestMatchers(HttpMethod.GET,
                                 "/api/games",
                                 "/api/games/",
                                 "/api/games/*",
-                                "/api/games/**"
-                        ).permitAll()
+                                "/api/games/**").permitAll()
 
-                        // Public genres
+                        // Public GET endpoints for genres
                         .requestMatchers(HttpMethod.GET,
                                 "/api/genres",
                                 "/api/genres/",
                                 "/api/genres/*",
-                                "/api/genres/**"
-                        ).permitAll()
+                                "/api/genres/**").permitAll()
 
-                        // Allow all OPTIONS (CORS preflight)
+                        // Allow OPTIONS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ADMIN-ONLY
+                        // Admin-only write access
                         .requestMatchers(HttpMethod.POST, "/api/games/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/games/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasRole("ADMIN")
@@ -113,20 +102,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "https://game-store-lilac-five.vercel.app"
         ));
-
-        config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
-
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -134,9 +118,7 @@ public class SecurityConfig {
                 "Origin",
                 "X-Requested-With"
         ));
-
         config.setExposedHeaders(Arrays.asList("Authorization"));
-
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 

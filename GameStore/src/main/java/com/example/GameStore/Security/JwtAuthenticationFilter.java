@@ -27,36 +27,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-
         String path = request.getServletPath();
+        String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        // DEBUG LOG
-        System.out.println("[DEBUG][SkipCheck] method=" + method + " path=" + path);
+        // Print detailed debug info
+        System.out.println("[DEBUG][SkipCheck] method=" + method +
+                " | servletPath=" + path +
+                " | requestURI=" + uri +
+                " | query=" + request.getQueryString());
 
         // Public auth endpoints
         if (path.matches("/api/auth/(login|register|refresh)")) {
+            System.out.println("[DEBUG][SkipCheck] Skipping auth endpoints");
             return true;
         }
 
-        // Allow all OPTIONS preflight requests
+        // Skip OPTIONS preflight
         if (method.equals("OPTIONS")) {
+            System.out.println("[DEBUG][SkipCheck] Skipping OPTIONS preflight");
             return true;
         }
 
-        // Allow all public GET endpoints for games and genres
-        if (method.equals("GET") && path.startsWith("/api/games")) {
+        // Skip all public GET requests for games or genres
+        if (method.equals("GET") && (path.contains("games") || path.contains("genres"))) {
+            System.out.println("[DEBUG][SkipCheck] Skipping public GET for games/genres");
             return true;
         }
 
-        if (method.equals("GET") && path.startsWith("/api/genres")) {
-            return true;
-        }
-
-        return false; // All others → filter will run
+        // All others → filter will run
+        System.out.println("[DEBUG][SkipCheck] Running JWT filter for this request");
+        return false;
     }
 
     @Override
@@ -66,8 +69,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-
-        System.out.println("[DEBUG] JwtFilter running for: " + request.getServletPath());
 
         String token = null;
         String username = null;
@@ -81,16 +82,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Authenticate only if username exists and no existing authentication
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtils.validateToken(token, userDetails.getUsername())) {
-
                 String role = jwtUtils.extractRole(token);
-                if (!role.startsWith("ROLE_")) {
-                    role = "ROLE_" + role;
-                }
+                if (!role.startsWith("ROLE_")) role = "ROLE_" + role;
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -100,8 +97,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                System.out.println("[DEBUG] JWT validated, authentication set for: " + username);
+            }
+        } else {
+            if (username == null) {
+                System.out.println("[DEBUG] No username extracted from token, skipping auth");
+            } else {
+                System.out.println("[DEBUG] Authentication already exists in context, skipping");
             }
         }
 
