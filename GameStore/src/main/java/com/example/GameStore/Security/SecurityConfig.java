@@ -59,6 +59,43 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+//                .authorizeHttpRequests(auth -> auth
+//
+//                        // Public auth endpoints
+//                        .requestMatchers("/api/auth/login",
+//                                "/api/auth/register",
+//                                "/api/auth/refresh").permitAll()
+//
+//                        // Public GET endpoints for games
+//                        .requestMatchers(HttpMethod.GET,
+//                                "/api/games",
+//                                "/api/games/",
+//                                "/api/games/*",
+//                                "/api/games/**").permitAll()
+//
+//                        // Public GET endpoints for genres
+//                        .requestMatchers(HttpMethod.GET,
+//                                "/api/genres",
+//                                "/api/genres/",
+//                                "/api/genres/*",
+//                                "/api/genres/**").permitAll()
+//
+//                        // Allow OPTIONS preflight
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//
+//                        // Admin-only write access
+//                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasRole("ADMIN")
+//
+//                        // Protected user routes
+//                        .requestMatchers("/api/auth/me").authenticated()
+//                        .requestMatchers("/api/user/**").authenticated()
+//
+//                        // Everything else requires authentication
+//                        .anyRequest().authenticated()
+//                )
+
                 .authorizeHttpRequests(auth -> auth
 
                         // Public auth endpoints
@@ -66,19 +103,9 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/refresh").permitAll()
 
-                        // Public GET endpoints for games
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/games",
-                                "/api/games/",
-                                "/api/games/*",
-                                "/api/games/**").permitAll()
-
-                        // Public GET endpoints for genres
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/genres",
-                                "/api/genres/",
-                                "/api/genres/*",
-                                "/api/genres/**").permitAll()
+                        // Public GET endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
                         // Allow OPTIONS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -92,9 +119,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
 
-                        // Everything else requires authentication
-                        .anyRequest().authenticated()
+                        // All others — PUBLIC for now
+                        .anyRequest().permitAll()   // ← MUST be permitAll (not authenticated)
                 )
+
 
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
