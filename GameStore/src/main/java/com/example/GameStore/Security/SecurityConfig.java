@@ -26,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+
 @Configuration
 public class SecurityConfig {
 
@@ -57,6 +58,8 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -66,28 +69,41 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // Public
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh")
-                        .permitAll()
+
+                        // Public auth endpoints
+                        .requestMatchers("/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/refresh").permitAll()
+
+                        // Public GET endpoints for games (FIXED)
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/games",
+                                "/api/games/",
+                                "/api/games/*",
+                                "/api/games/**"
+                        ).permitAll()
+
+                        // Public genres
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/genres",
+                                "/api/genres/",
+                                "/api/genres/*",
+                                "/api/genres/**"
+                        ).permitAll()
+
+                        // Allow all OPTIONS (CORS preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Public GET access
-                        .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
+                        // ADMIN-ONLY
+                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasRole("ADMIN")
 
-
-                                // Admin-only write access
-                                .requestMatchers(HttpMethod.POST, "/api/games").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
-
-
-                                // User info protected
+                        // Protected user routes
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
 
-                        // Everything else → authenticated
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
 
@@ -97,8 +113,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(Arrays.asList(
@@ -107,9 +125,8 @@ public class SecurityConfig {
                 "https://game-store-lilac-five.vercel.app"
         ));
 
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
 
-        // ❗ FIX: MUST specify headers explicitly when allowCredentials=true
         config.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -118,14 +135,9 @@ public class SecurityConfig {
                 "X-Requested-With"
         ));
 
-        // Optional but recommended
-        config.setExposedHeaders(Arrays.asList(
-                "Authorization"
-        ));
+        config.setExposedHeaders(Arrays.asList("Authorization"));
 
         config.setAllowCredentials(true);
-
-        // Helps browsers cache preflight responses
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
