@@ -24,9 +24,13 @@ public class Game {
     @Column(nullable = false, unique = true)
     String name;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     @NotBlank
     String img;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     @NotBlank
     String cover;
 
