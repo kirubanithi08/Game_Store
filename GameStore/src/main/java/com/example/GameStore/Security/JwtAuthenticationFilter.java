@@ -27,52 +27,77 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String path = request.getServletPath();
         String method = request.getMethod();
-        System.out.println("[DEBUG] Incoming request path: " + path + ", method: " + method);
 
-        // Skip public endpoints
-        if (path.equals("/api/auth/login")
-                || path.equals("/api/auth/register")
-                || path.equals("/api/auth/refresh")
-                || (method.equals("GET") && path.startsWith("/api/games"))) {
-            filterChain.doFilter(request, response);
-            return;
+        // DEBUG LOG
+        System.out.println("[DEBUG][SkipCheck] method=" + method + " path=" + path);
+
+        // Public auth endpoints
+        if (path.matches("/api/auth/(login|register|refresh)")) {
+            return true;
         }
 
+        // Allow all OPTIONS preflight requests
+        if (method.equals("OPTIONS")) {
+            return true;
+        }
+
+        // Allow all public GET endpoints for games and genres
+        if (method.equals("GET") && path.startsWith("/api/games")) {
+            return true;
+        }
+
+        if (method.equals("GET") && path.startsWith("/api/genres")) {
+            return true;
+        }
+
+        return false; // All others → filter will run
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("[DEBUG] Authorization header: " + authHeader);
+
+        System.out.println("[DEBUG] JwtFilter running for: " + request.getServletPath());
 
         String token = null;
         String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-
             try {
                 username = jwtUtils.extractUsername(token);
             } catch (Exception e) {
-                System.out.println("[DEBUG] Failed to extract username: " + e.getMessage());
+                System.out.println("[DEBUG] Token extraction failed: " + e.getMessage());
             }
         }
 
+        // Authenticate only if username exists and no existing authentication
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtils.validateToken(token, userDetails.getUsername())) {
+
                 String role = jwtUtils.extractRole(token);
                 if (!role.startsWith("ROLE_")) {
                     role = "ROLE_" + role;
                 }
 
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
-
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, List.of(authority));
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role))
+                        );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
