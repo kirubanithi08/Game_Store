@@ -74,10 +74,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
-                        // Admin-only write access
-//                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasAuthority("ROLE_ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasAuthority("ROLE_ADMIN")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasAuthority("ROLE_ADMIN")
+
 
                                 // Admin-only write access
                                 .requestMatchers(HttpMethod.POST, "/api/games").hasAuthority("ROLE_ADMIN")

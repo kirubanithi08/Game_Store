@@ -32,12 +32,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
-        System.out.println("[DEBUG] Incoming request path: " + path);
+        String method = request.getMethod();
+        System.out.println("[DEBUG] Incoming request path: " + path + ", method: " + method);
 
         // Skip public endpoints
         if (path.equals("/api/auth/login")
                 || path.equals("/api/auth/register")
-                || path.equals("/api/auth/refresh")) {
+                || path.equals("/api/auth/refresh")
+                || (method.equals("GET") && path.startsWith("/api/games"))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,11 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            System.out.println("[DEBUG] Extracted token: " + token);
 
             try {
                 username = jwtUtils.extractUsername(token);
-                System.out.println("[DEBUG] Username from token: " + username);
             } catch (Exception e) {
                 System.out.println("[DEBUG] Failed to extract username: " + e.getMessage());
             }
@@ -62,37 +62,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            System.out.println("[DEBUG] Loaded user details: " + userDetails.getUsername());
 
             if (jwtUtils.validateToken(token, userDetails.getUsername())) {
                 String role = jwtUtils.extractRole(token);
-                System.out.println("[DEBUG] Role from token before normalization: " + role);
-
                 if (!role.startsWith("ROLE_")) {
                     role = "ROLE_" + role;
                 }
-                System.out.println("[DEBUG] Role after normalization: " + role);
 
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                List.of(authority)
-                        );
+                        new UsernamePasswordAuthenticationToken(userDetails, null, List.of(authority));
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("[DEBUG] SecurityContext authentication set: " + SecurityContextHolder.getContext().getAuthentication());
-            } else {
-                System.out.println("[DEBUG] Token validation failed");
             }
-        } else if (username == null) {
-            System.out.println("[DEBUG] Username is null or authentication already exists");
         }
 
         filterChain.doFilter(request, response);
