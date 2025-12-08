@@ -59,46 +59,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-//                .authorizeHttpRequests(auth -> auth
-//
-//                        // Public auth endpoints
-//                        .requestMatchers("/api/auth/login",
-//                                "/api/auth/register",
-//                                "/api/auth/refresh").permitAll()
-//
-//                        // Public GET endpoints for games
-//                        .requestMatchers(HttpMethod.GET,
-//                                "/api/games",
-//                                "/api/games/",
-//                                "/api/games/*",
-//                                "/api/games/**").permitAll()
-//
-//                        // Public GET endpoints for genres
-//                        .requestMatchers(HttpMethod.GET,
-//                                "/api/genres",
-//                                "/api/genres/",
-//                                "/api/genres/*",
-//                                "/api/genres/**").permitAll()
-//
-//                        // Allow OPTIONS preflight
-//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//
-//                        // Admin-only write access
-//                        .requestMatchers(HttpMethod.POST, "/api/games/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/api/games/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasRole("ADMIN")
-//
-//                        // Protected user routes
-//                        .requestMatchers("/api/auth/me").authenticated()
-//                        .requestMatchers("/api/user/**").authenticated()
-//
-//                        // Everything else requires authentication
-//                        .anyRequest().authenticated()
-//                )
-
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public auth endpoints
+                        // Allow root path (Render health checks)
+                        .requestMatchers("/", "/index.html").permitAll()
+
+                        // Auth endpoints (public)
                         .requestMatchers("/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/refresh").permitAll()
@@ -119,10 +85,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
 
-                        // All others — PUBLIC for now
-                        .anyRequest().permitAll()   // ← MUST be permitAll (not authenticated)
+                        // Everything else — public
+                        .anyRequest().permitAll()
                 )
-
 
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -154,5 +119,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 }

@@ -13,7 +13,7 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     List<Game> findByFeaturedTrue();
 
 
-    @Query("SELECT g FROM Game g ORDER BY g.id DESC") // temporary: latest games
+    @Query("SELECT g FROM Game g ORDER BY g.id DESC")
     List<Game> findTrendingGames(Pageable pageable);
 
 
