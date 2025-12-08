@@ -5,7 +5,7 @@ import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.Genre;
 import com.example.GameStore.Repository.GameRepository;
 import com.example.GameStore.Repository.GenreRepository;
-import org.springframework.data.domain.Page;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +22,8 @@ public class GameService {
         this.genreRepository = genreRepository;
     }
 
-
     public Game createGame(GameRequest req) {
         Game game = new Game();
-
         game.setName(req.name());
         game.setImg(req.img());
         game.setCover(req.cover());
@@ -39,21 +37,16 @@ public class GameService {
         return gameRepository.save(game);
     }
 
-
-
-    public Page<Game> getGames(int page, int size) {
-        return gameRepository.findAll(PageRequest.of(page, size));
+    public List<Game> getGames(int page, int size) {
+        return gameRepository.findAll(PageRequest.of(page, size)).getContent();
     }
-
 
     public Optional<Game> getGameById(Long id) {
         return gameRepository.findById(id);
     }
 
-
     public Game updateGame(Long id, GameRequest req) {
         return gameRepository.findById(id).map(game -> {
-
             game.setName(req.name());
             game.setImg(req.img());
             game.setCover(req.cover());
@@ -65,29 +58,46 @@ public class GameService {
             game.setGenres(genres);
 
             return gameRepository.save(game);
-
         }).orElseThrow(() -> new RuntimeException("Game not found"));
     }
-
 
     public void deleteGame(Long id) {
         gameRepository.deleteById(id);
     }
 
-
+    @Transactional
     public List<Game> getFeaturedGames() {
-        return gameRepository.findByFeaturedTrue();
+        try {
+            List<Game> games = gameRepository.findFeaturedGamesWithGenres();
+            return games != null ? games : Collections.emptyList();
+        } catch (Exception e) {
+            System.out.println("[ERROR] Failed to fetch featured games: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
+    @Transactional
     public List<Game> getTrendingGames(int limit) {
-        return gameRepository.findTrendingGames(PageRequest.of(0, limit));
+        try {
+            return gameRepository.findTrendingGamesWithGenres(PageRequest.of(0, limit)).getContent();
+        } catch (Exception e) {
+            System.out.println("[ERROR] Failed to fetch trending games: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
+    @Transactional
     public List<Game> getNewGames(int limit) {
-        return gameRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit));
+        try {
+            return gameRepository.findNewGamesWithGenres(PageRequest.of(0, limit)).getContent();
+        } catch (Exception e) {
+            System.out.println("[ERROR] Failed to fetch new games: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public List<Game> searchGames(String query) {
-        return gameRepository.findByNameContainingIgnoreCase(query);
+        List<Game> games = gameRepository.findByNameContainingIgnoreCase(query);
+        return games != null ? games : Collections.emptyList();
     }
 }

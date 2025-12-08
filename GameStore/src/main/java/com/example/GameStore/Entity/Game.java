@@ -18,29 +18,29 @@ import java.util.Set;
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @NotBlank
     @Column(nullable = false, unique = true)
-    String name;
+    private String name;
 
     @Lob
     @Column(columnDefinition = "TEXT")
     @NotBlank
-    String img;
+    private String img;
 
     @Lob
     @Column(columnDefinition = "TEXT")
     @NotBlank
-    String cover;
+    private String cover;
 
     @NotBlank
-    String description;
+    private String description;
 
     @NotNull
-    int price;
+    private int price;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "game_genre",
             joinColumns = @JoinColumn(name = "game_id"),
@@ -54,9 +54,6 @@ public class Game {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-
 }
