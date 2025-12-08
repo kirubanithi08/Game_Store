@@ -28,86 +28,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    /**
-     * Decide which requests should NOT be filtered by this JWT filter.
-     * This method is defensive: it normalizes the request path (removes contextPath),
-     * handles nulls safely, and skips common public endpoints + health checks + static files.
-     */
+
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String method = request.getMethod() == null ? "" : request.getMethod().toUpperCase(Locale.ROOT);
 
-        String requestUri = request.getRequestURI() == null ? "" : request.getRequestURI();
-        String contextPath = request.getContextPath() == null ? "" : request.getContextPath();
-
-        // Safely derive the path relative to contextPath
-        String path = requestUri;
-        if (!contextPath.isEmpty() && requestUri.startsWith(contextPath)) {
-            path = requestUri.substring(contextPath.length());
-        }
-
+        String path = request.getRequestURI();
         if (path == null) path = "";
         path = path.trim();
 
-        // For debug (you can remove or lower log verbosity later)
         System.out.println("[DEBUG][SkipCheck] method=" + method + " | path=" + path);
 
-        // 1) Root + health checks (Render calls HEAD / and GET /)
-        if (path.equals("/") || path.isEmpty() || path.equalsIgnoreCase("/health") || path.equalsIgnoreCase("/healthz")) {
-            System.out.println("[DEBUG] Skipping root/health path: " + path);
+        // 1) Root + health checks
+        if (path.equals("/") || path.equals("/health") || path.equals("/healthz")) {
             return true;
         }
 
-        // 2) Static assets often requested by browsers
-        if (path.equalsIgnoreCase("/favicon.ico")
-                || path.endsWith(".css")
-                || path.endsWith(".js")
-                || path.endsWith(".png")
-                || path.endsWith(".jpg")
-                || path.endsWith(".jpeg")
-                || path.endsWith(".webp")
-                || path.endsWith(".svg")) {
-            System.out.println("[DEBUG] Skipping static asset: " + path);
+        // 2) Static files
+        if (path.matches(".*\\.(css|js|png|jpg|jpeg|webp|svg)$")) {
             return true;
         }
 
-        // 3) Auth endpoints (public)
-        // matches any path under /api/auth/ like /api/auth/login, /api/auth/register, /api/auth/refresh
-        if (path.startsWith("/api/auth/")) {
-            System.out.println("[DEBUG] Skipping auth endpoints: " + path);
+        // 3) Public auth endpoints only
+        if (path.equals("/api/auth/login") ||
+                path.equals("/api/auth/register") ||
+                path.equals("/api/auth/refresh")) {
             return true;
         }
 
-        // 4) Preflight & HEAD should be skipped
-        if ("OPTIONS".equals(method) || "HEAD".equals(method)) {
-            System.out.println("[DEBUG] Skipping " + method + " request for: " + path);
+        // ❗ /api/auth/me should NOT be skipped — it requires JWT
+        // Let filter process it.
+
+        // 4) Preflight
+        if (method.equals("OPTIONS") || method.equals("HEAD")) {
             return true;
         }
 
-        // 5) Public GET APIs for games and genres
-        if ("GET".equals(method)) {
-            if (path.startsWith("/api/games")) {
-                System.out.println("[DEBUG] Skipping public GET /api/games*: " + path);
+        // 5) Public GET for games & genres
+        if (method.equals("GET")) {
+            if (path.startsWith("/api/games/") && !path.matches(".*/(edit|admin)$")) {
                 return true;
             }
             if (path.startsWith("/api/genres")) {
-                System.out.println("[DEBUG] Skipping public GET /api/genres*: " + path);
                 return true;
             }
         }
 
-        // Otherwise the filter should run (protected route)
-        System.out.println("[DEBUG] Running JWT filter for this request");
+        // Protected routes → must process JWT
+        System.out.println("[DEBUG] Running JWT filter for: " + path);
         return false;
     }
 
-    /**
-     * Main filter logic. This implementation is defensive:
-     * - it never throws an exception to the servlet container (catches and logs),
-     * - it always calls filterChain.doFilter so requests keep flowing,
-     * - it validates token only when present and well-formed.
-     */
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
