@@ -30,12 +30,16 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_favorites",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "game_id")
-    )
-    private Set<Game> favorite = new HashSet<>();
+//    @ManyToMany
+//    @JoinTable(
+//            name = "user_favorites",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            inverseJoinColumns = @JoinColumn(name = "game_id")
+//    )
+//    private Set<Game> favorite = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Favorite> favorites = new HashSet<>();
+
 
 }

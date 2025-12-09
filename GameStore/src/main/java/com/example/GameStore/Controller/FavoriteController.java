@@ -1,8 +1,11 @@
 package com.example.GameStore.Controller;
 
+import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Service.FavoriteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/favorites")
@@ -25,7 +28,18 @@ public class FavoriteController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getFavorites() {
-        return ResponseEntity.ok(favoriteService.getFavorites());
+    public ResponseEntity<?> getFavorites(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+
+        return ResponseEntity.ok(favoriteService.getFavorites(page, size));
     }
+
+
+    @GetMapping("/exists/{gameId}")
+    public ResponseEntity<Boolean> isFavorited(@PathVariable Long gameId) {
+        return ResponseEntity.ok(favoriteService.isFavorited(gameId));
+    }
+
+
 }
