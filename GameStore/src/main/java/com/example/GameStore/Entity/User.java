@@ -1,5 +1,6 @@
 package com.example.GameStore.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -30,15 +31,10 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "user_favorites",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "game_id")
-//    )
-//    private Set<Game> favorite = new HashSet<>();
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<Favorite> favorites = new HashSet<>();
 
 
