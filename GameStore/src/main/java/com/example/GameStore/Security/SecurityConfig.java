@@ -84,6 +84,7 @@ public class SecurityConfig {
                         // Protected user routes
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/favorites/**").authenticated()
 
                         // Everything else — public
                         .anyRequest().permitAll()
