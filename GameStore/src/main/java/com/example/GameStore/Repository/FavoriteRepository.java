@@ -14,5 +14,8 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     void deleteByUserIdAndGameId(Long userId, Long gameId);
 
     Page<Favorite> findByUserId(Long userId, Pageable pageable);
+
+
+
 }
 

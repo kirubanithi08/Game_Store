@@ -1,11 +1,9 @@
 package com.example.GameStore.Controller;
 
-import com.example.GameStore.Entity.Game;
+import com.example.GameStore.Dto.FavoriteGameDTO;
 import com.example.GameStore.Service.FavoriteService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/favorites")
@@ -18,28 +16,25 @@ public class FavoriteController {
     }
 
     @PostMapping("/{gameId}")
-    public ResponseEntity<?> addFavorite(@PathVariable Long gameId) {
-        return ResponseEntity.ok(favoriteService.addFavorite(gameId));
+    public String addFavorite(@PathVariable Long gameId) {
+        return favoriteService.addFavorite(gameId);
     }
 
     @DeleteMapping("/{gameId}")
-    public ResponseEntity<?> removeFavorite(@PathVariable Long gameId) {
-        return ResponseEntity.ok(favoriteService.removeFavorite(gameId));
+    public String removeFavorite(@PathVariable Long gameId) {
+        return favoriteService.removeFavorite(gameId);
     }
 
     @GetMapping
-    public ResponseEntity<?> getFavorites(
+    public Page<FavoriteGameDTO> getFavorites(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-
-        return ResponseEntity.ok(favoriteService.getFavorites(page, size));
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        return favoriteService.getFavorites(page, size);
     }
-
 
     @GetMapping("/exists/{gameId}")
-    public ResponseEntity<Boolean> isFavorited(@PathVariable Long gameId) {
-        return ResponseEntity.ok(favoriteService.isFavorited(gameId));
+    public boolean isFavorited(@PathVariable Long gameId) {
+        return favoriteService.isFavorited(gameId);
     }
-
-
 }

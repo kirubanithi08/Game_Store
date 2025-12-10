@@ -1,5 +1,6 @@
 package com.example.GameStore.Service;
 
+import com.example.GameStore.Dto.FavoriteGameDTO;
 import com.example.GameStore.Entity.Favorite;
 import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.User;
@@ -11,9 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Set;
 
 @Service
 public class FavoriteService {
@@ -51,7 +49,6 @@ public class FavoriteService {
         favorite.setGame(game);
 
         favoriteRepository.save(favorite);
-
         return "Game added to favorites!";
     }
 
@@ -66,17 +63,31 @@ public class FavoriteService {
         return "Game removed from favorites!";
     }
 
-    public Page<Favorite> getFavorites(int page, int size) {
+    public Page<FavoriteGameDTO> getFavorites(int page, int size) {
         User user = getCurrentUser();
-        return favoriteRepository.findByUserId(
+
+        Page<Favorite> favorites = favoriteRepository.findByUserId(
                 user.getId(),
                 PageRequest.of(page, size)
         );
+
+        return favorites.map(fav -> {
+            Game game = fav.getGame();
+
+            FavoriteGameDTO dto = new FavoriteGameDTO();
+            dto.setId(game.getId());
+            dto.setName(game.getName());
+            dto.setImg(game.getImg());
+            dto.setCover(game.getCover());
+            dto.setDescription(game.getDescription());
+            dto.setPrice(game.getPrice());
+
+            return dto;
+        });
     }
 
     public boolean isFavorited(Long gameId) {
         User user = getCurrentUser();
         return favoriteRepository.existsByUserIdAndGameId(user.getId(), gameId);
     }
-
 }
