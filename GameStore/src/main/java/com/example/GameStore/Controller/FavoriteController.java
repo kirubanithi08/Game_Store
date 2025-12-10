@@ -1,3 +1,4 @@
+
 package com.example.GameStore.Controller;
 
 import com.example.GameStore.Dto.FavoriteGameDTO;
