@@ -34,6 +34,7 @@ public class Game {
     @NotBlank
     private String cover;
 
+
     @NotBlank
     @Column(columnDefinition = "TEXT")
     private String description;
