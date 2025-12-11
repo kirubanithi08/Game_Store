@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -31,10 +32,7 @@ public class FavoriteService {
         this.favoriteRepository = favoriteRepository;
     }
 
-    /**
-     * Retrieves currently authenticated user.
-     * Safe version: prevents anonymousUser issues.
-     */
+
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -48,9 +46,7 @@ public class FavoriteService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
 
-    /**
-     * Adds a game to favorites.
-     */
+
     public String addFavorite(Long gameId) {
         User user = getCurrentUser();
 
@@ -69,9 +65,7 @@ public class FavoriteService {
         return "Game added to favorites!";
     }
 
-    /**
-     * Removes a game from favorites.
-     */
+    @Transactional
     public String removeFavorite(Long gameId) {
         User user = getCurrentUser();
 
@@ -108,9 +102,7 @@ public class FavoriteService {
         });
     }
 
-    /**
-     * Checks if a given game is in user's favorites.
-     */
+
     public boolean isFavorited(Long gameId) {
         User user = getCurrentUser();
         return favoriteRepository.existsByUserIdAndGameId(user.getId(), gameId);
