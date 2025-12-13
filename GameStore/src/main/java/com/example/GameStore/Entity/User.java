@@ -37,5 +37,15 @@ public class User {
     @JsonIgnore
     private Set<Favorite> favorites = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Cart> cart = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Purchase> purchases = new HashSet<>();
+
+
 
 }
