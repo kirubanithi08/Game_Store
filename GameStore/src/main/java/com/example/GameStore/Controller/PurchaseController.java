@@ -19,9 +19,7 @@ public class PurchaseController {
 
     private final PurchaseService purchaseService;
 
-    /* ===============================
-       BUY GAME
-    =============================== */
+
     @PostMapping("/{gameId}")
     public void purchaseGame(
             @AuthenticationPrincipal User user,
@@ -30,9 +28,7 @@ public class PurchaseController {
         purchaseService.purchaseGame(user, gameId);
     }
 
-    /* ===============================
-       CHECK IF PURCHASED
-    =============================== */
+
     @GetMapping("/exists/{gameId}")
     public boolean isPurchased(
             @AuthenticationPrincipal User user,
@@ -41,9 +37,7 @@ public class PurchaseController {
         return purchaseService.isPurchased(user, gameId);
     }
 
-    /* ===============================
-       USER LIBRARY
-    =============================== */
+
     @GetMapping
     public Object myPurchases(
             @AuthenticationPrincipal User user
