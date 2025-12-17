@@ -51,7 +51,7 @@ public class CartService {
         User user = getCurrentUser();
 
         if (cartRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
-            return "Game already in favorites!";
+            return "Game already in cart!";
         }
 
         Game game = gameRepository.findById(gameId)
@@ -62,7 +62,7 @@ public class CartService {
         cart.setGame(game);
 
         cartRepository.save(cart);
-        return "Game added to favorites!";
+        return "Game added to cart!";
     }
 
     @Transactional
@@ -70,11 +70,11 @@ public class CartService {
         User user = getCurrentUser();
 
         if (!cartRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
-            return "Game not in favorites!";
+            return "Game not in cart!";
         }
 
         cartRepository.deleteByUserIdAndGameId(user.getId(), gameId);
-        return "Game removed from favorites!";
+        return "Game removed from cart!";
     }
 
 

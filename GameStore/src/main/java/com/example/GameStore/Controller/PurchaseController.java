@@ -1,47 +1,42 @@
+
 package com.example.GameStore.Controller;
 
-
+import com.example.GameStore.Dto.PurchaseDTO;
+import com.example.GameStore.Service.FavoriteService;
 import com.example.GameStore.Service.PurchaseService;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.bind.annotation.*;
-
-
-import com.example.GameStore.Entity.User;
-
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/purchases")
-@RequiredArgsConstructor
+@RequestMapping("/api/purchase")
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
 
+    public PurchaseController(PurchaseService purchaseService) {
+        this.purchaseService = purchaseService;
+    }
 
     @PostMapping("/{gameId}")
-    public void purchaseGame(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long gameId
-    ) {
-        purchaseService.purchaseGame(user, gameId);
+    public String addPurchase(@PathVariable Long gameId) {
+        return purchaseService.addPurchase(gameId);
     }
 
-
-    @GetMapping("/exists/{gameId}")
-    public boolean isPurchased(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long gameId
-    ) {
-        return purchaseService.isPurchased(user, gameId);
+    @DeleteMapping("/{gameId}")
+    public String removePurchase(@PathVariable Long gameId) {
+        return purchaseService.removePurchase(gameId);
     }
-
 
     @GetMapping
-    public Object myPurchases(
-            @AuthenticationPrincipal User user
+    public Page<PurchaseDTO> getPurchase(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
     ) {
-        return purchaseService.getUserPurchases(user);
+        return purchaseService.getPurchase(page, size);
+    }
+
+    @GetMapping("/exists/{gameId}")
+    public boolean ispurchased(@PathVariable Long gameId) {
+        return purchaseService.ispurchased(gameId);
     }
 }
