@@ -6,14 +6,13 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class FavoriteGameDTO {
+public class FavoriteDTO {
     private Long id;
     private String name;
     private String img;
     private String cover;
     private String description;
     private int price;
-
     List<Long> genres;
 }
 

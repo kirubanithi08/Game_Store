@@ -1,11 +1,10 @@
 package com.example.GameStore.Service;
 
-import com.example.GameStore.Dto.FavoriteDTO;
-import com.example.GameStore.Dto.FavoriteGameDTO;
-import com.example.GameStore.Entity.Favorite;
+import com.example.GameStore.Dto.CartDTO;
+import com.example.GameStore.Entity.Cart;
 import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.User;
-import com.example.GameStore.Repository.FavoriteRepository;
+import com.example.GameStore.Repository.CartRepository;
 import com.example.GameStore.Repository.GameRepository;
 import com.example.GameStore.Repository.UserRepository;
 
@@ -19,18 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-public class FavoriteService {
+public class CartService {
 
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
-    private final FavoriteRepository favoriteRepository;
+    private final CartRepository cartRepository;
 
-    public FavoriteService(UserRepository userRepository,
+    public CartService(UserRepository userRepository,
                            GameRepository gameRepository,
-                           FavoriteRepository favoriteRepository) {
+                       CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
-        this.favoriteRepository = favoriteRepository;
+        this.cartRepository = cartRepository;
     }
 
 
@@ -48,49 +47,49 @@ public class FavoriteService {
     }
 
 
-    public String addFavorite(Long gameId) {
+    public String addCart(Long gameId) {
         User user = getCurrentUser();
 
-        if (favoriteRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
+        if (cartRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
             return "Game already in favorites!";
         }
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
 
-        Favorite favorite = new Favorite();
-        favorite.setUser(user);
-        favorite.setGame(game);
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart.setGame(game);
 
-        favoriteRepository.save(favorite);
+        cartRepository.save(cart);
         return "Game added to favorites!";
     }
 
     @Transactional
-    public String removeFavorite(Long gameId) {
+    public String removeCart(Long gameId) {
         User user = getCurrentUser();
 
-        if (!favoriteRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
+        if (!cartRepository.existsByUserIdAndGameId(user.getId(), gameId)) {
             return "Game not in favorites!";
         }
 
-        favoriteRepository.deleteByUserIdAndGameId(user.getId(), gameId);
+        cartRepository.deleteByUserIdAndGameId(user.getId(), gameId);
         return "Game removed from favorites!";
     }
 
 
-    public Page<FavoriteDTO> getFavorites(int page, int size) {
+    public Page<CartDTO> getCart(int page, int size) {
         User user = getCurrentUser();
 
-        Page<Favorite> favorites = favoriteRepository.findByUserId(
+        Page<Cart> cart = cartRepository.findByUserId(
                 user.getId(),
                 PageRequest.of(page, size)
         );
 
-        return favorites.map(fav -> {
-            Game game = fav.getGame();
+        return cart.map(ct -> {
+            Game game = ct.getGame();
 
-            FavoriteDTO dto = new FavoriteDTO();
+            CartDTO dto = new CartDTO();
             dto.setId(game.getId());
             dto.setName(game.getName());
             dto.setImg(game.getImg());
@@ -102,8 +101,8 @@ public class FavoriteService {
     }
 
 
-    public boolean isFavorited(Long gameId) {
+    public boolean isCart(Long gameId) {
         User user = getCurrentUser();
-        return favoriteRepository.existsByUserIdAndGameId(user.getId(), gameId);
+        return cartRepository.existsByUserIdAndGameId(user.getId(), gameId);
     }
 }

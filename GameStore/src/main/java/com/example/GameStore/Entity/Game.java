@@ -40,7 +40,7 @@ public class Game {
     private String description;
 
     @NotNull
-    private double price;
+    private int price;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

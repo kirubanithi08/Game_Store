@@ -1,7 +1,7 @@
 
 package com.example.GameStore.Controller;
 
-import com.example.GameStore.Dto.FavoriteGameDTO;
+import com.example.GameStore.Dto.FavoriteDTO;
 import com.example.GameStore.Service.FavoriteService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class FavoriteController {
     }
 
     @GetMapping
-    public Page<FavoriteGameDTO> getFavorites(
+    public Page<FavoriteDTO> getFavorites(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {

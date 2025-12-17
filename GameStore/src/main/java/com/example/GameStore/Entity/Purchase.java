@@ -1,53 +1,34 @@
 package com.example.GameStore.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-import lombok.*;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-
 @Entity
-@Table(
-        name = "purchases",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "game_id"})
-        }
-)
-@Getter
-@Setter
-@NoArgsConstructor
+@Table(name = "purchase")
+@Data
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class Purchase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /* ===============================
-       USER
-    =============================== */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
-    /* ===============================
-       GAME
-    =============================== */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "game_id")
     private Game game;
 
-    /* ===============================
-       PURCHASE DATE
-    =============================== */
-    @CreationTimestamp
-    private LocalDateTime purchasedAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
+
