@@ -1,7 +1,6 @@
 package com.example.GameStore.Service;
 
 import com.example.GameStore.Dto.FavoriteDTO;
-import com.example.GameStore.Dto.FavoriteGameDTO;
 import com.example.GameStore.Entity.Favorite;
 import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.User;
