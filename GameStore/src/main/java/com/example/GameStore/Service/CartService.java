@@ -3,6 +3,7 @@ package com.example.GameStore.Service;
 import com.example.GameStore.Dto.CartDTO;
 import com.example.GameStore.Entity.Cart;
 import com.example.GameStore.Entity.Game;
+import com.example.GameStore.Entity.Genre;
 import com.example.GameStore.Entity.User;
 import com.example.GameStore.Repository.CartRepository;
 import com.example.GameStore.Repository.GameRepository;
@@ -96,6 +97,12 @@ public class CartService {
             dto.setCover(game.getCover());
             dto.setDescription(game.getDescription());
             dto.setPrice(game.getPrice());
+            dto.setGenres(
+                    game.getGenres()
+                            .stream()
+                            .map(Genre::getName)
+                            .toList()
+            );
             return dto;
         });
     }

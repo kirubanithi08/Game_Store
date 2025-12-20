@@ -13,6 +13,6 @@ public class CartDTO {
     private String cover;
     private String description;
     private int price;
-    List<Long> genres;
+    List<String> genres;
 }
 
