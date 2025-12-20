@@ -61,27 +61,27 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Allow root path (Render health checks)
+
                         .requestMatchers("/", "/index.html").permitAll()
 
-                        // Auth endpoints (public)
+
                         .requestMatchers("/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/refresh").permitAll()
 
-                        // Public GET endpoints
+
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/genres/**").permitAll()
 
-                        // Allow OPTIONS preflight
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Admin-only write access
+
                         .requestMatchers(HttpMethod.POST, "/api/games/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/games/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/games/**").hasRole("ADMIN")
 
-                        // Protected user routes
+
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/favorites/**").authenticated()
@@ -89,7 +89,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/purchases/**").authenticated()
                         .requestMatchers("/api/cart/**").authenticated()
 
-                        // Everything else — public
+
                         .anyRequest().permitAll()
                 )
 

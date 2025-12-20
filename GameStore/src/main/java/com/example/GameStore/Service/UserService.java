@@ -1,6 +1,5 @@
 package com.example.GameStore.Service;
 
-import com.example.GameStore.Entity.Game;
 import com.example.GameStore.Entity.User;
 import com.example.GameStore.Repository.UserRepository;
 import org.springframework.data.domain.Page;

@@ -10,4 +10,5 @@ public record GameRequest(
         int price,
         boolean featured,
         List<Long> genres
-) {}
+) {
+}

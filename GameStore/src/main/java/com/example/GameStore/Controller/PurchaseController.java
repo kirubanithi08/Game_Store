@@ -2,7 +2,6 @@
 package com.example.GameStore.Controller;
 
 import com.example.GameStore.Dto.PurchaseDTO;
-import com.example.GameStore.Service.FavoriteService;
 import com.example.GameStore.Service.PurchaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;

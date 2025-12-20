@@ -81,18 +81,15 @@ public class AuthController {
         }
 
         try {
-            // Validate first (this will throw if parse/signature fails)
+
             if (!jwtUtils.validateRefreshToken(refreshToken)) {
                 return ResponseEntity.status(401).build();
             }
 
-            // Extract username after validation
             String username = jwtUtils.extractUsername(refreshToken);
 
-            // Load user BEFORE token creation
             User user = authService.getUser(username);
 
-            // Now generate new JWT
             String newAccessToken = jwtUtils.generateToken(
                     username,
                     user.getRole()
@@ -106,7 +103,7 @@ public class AuthController {
                     )
             );
         } catch (JwtException | IllegalArgumentException e) {
-            // Token parsing/validation error
+
             return ResponseEntity.status(401).build();
         }
     }

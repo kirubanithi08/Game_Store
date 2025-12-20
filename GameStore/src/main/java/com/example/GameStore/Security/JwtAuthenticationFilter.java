@@ -39,34 +39,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (path == null) path = "";
         path = path.trim();
 
-        System.out.println("[DEBUG][SkipCheck] method=" + method + " | path=" + path);
+//        System.out.println("[DEBUG][SkipCheck] method=" + method + " | path=" + path);
 
-        // 1) Root + health checks
         if (path.equals("/") || path.equals("/health") || path.equals("/healthz")) {
             return true;
         }
 
-        // 2) Static files
         if (path.matches(".*\\.(css|js|png|jpg|jpeg|webp|svg)$")) {
             return true;
         }
 
-        // 3) Public auth endpoints only
+
         if (path.equals("/api/auth/login") ||
                 path.equals("/api/auth/register") ||
                 path.equals("/api/auth/refresh")) {
             return true;
         }
 
-        // ❗ /api/auth/me should NOT be skipped — it requires JWT
-        // Let filter process it.
-
-        // 4) Preflight
         if (method.equals("OPTIONS") || method.equals("HEAD")) {
             return true;
         }
 
-        // 5) Public GET for games & genres
+
         if (method.equals("GET")) {
             if (path.startsWith("/api/games/") && !path.matches(".*/(edit|admin)$")) {
                 return true;
@@ -76,8 +70,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Protected routes → must process JWT
-        System.out.println("[DEBUG] Running JWT filter for: " + path);
+
+//        System.out.println("[DEBUG] Running JWT filter for: " + path);
         return false;
     }
 
@@ -92,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String authHeader = request.getHeader("Authorization");
 
-            // If header is missing or not Bearer, just continue (public or unauthenticated request)
+
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
@@ -108,21 +102,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtils.extractUsername(token);
             } catch (Exception ex) {
-                // invalid token or extraction failed — log and continue without authenticating
-                System.out.println("[DEBUG] Token extraction failed: " + ex.getMessage());
+
+//                System.out.println("[DEBUG] Token extraction failed: " + ex.getMessage());
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // Only authenticate if we have a username and no existing authentication
+
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails;
                 try {
                     userDetails = userDetailsService.loadUserByUsername(username);
                 } catch (Exception ex) {
-                    // user not found or other issue — log and continue
-                    System.out.println("[DEBUG] UserDetails load failed for " + username + " : " + ex.getMessage());
+
+//                    System.out.println("[DEBUG] UserDetails load failed for " + username + " : " + ex.getMessage());
                     filterChain.doFilter(request, response);
                     return;
                 }
@@ -131,8 +125,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 try {
                     valid = jwtUtils.validateToken(token, userDetails.getUsername());
                 } catch (Exception ex) {
-                    System.out.println("[DEBUG] Token validation threw: " + ex.getMessage());
-                    // don't authenticate; continue
+//                    System.out.println("[DEBUG] Token validation threw: " + ex.getMessage());
                 }
 
                 if (valid) {
@@ -140,7 +133,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     try {
                         role = jwtUtils.extractRole(token);
                     } catch (Exception ex) {
-                        System.out.println("[DEBUG] Role extraction failed: " + ex.getMessage());
+//                        System.out.println("[DEBUG] Role extraction failed: " + ex.getMessage());
                     }
 
                     if (role == null) role = "USER";
@@ -158,16 +151,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    System.out.println("[DEBUG] JWT validated → authenticated " + username);
+//                    System.out.println("[DEBUG] JWT validated → authenticated " + username);
                 }
             }
 
-            // Continue the chain in normal flow
+
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            // Defensive catch-all: log and continue so filter never causes 500
-            System.out.println("[ERROR] Unexpected error in JwtAuthenticationFilter: " + e.getMessage());
+
+//            System.out.println("[ERROR] Unexpected error in JwtAuthenticationFilter: " + e.getMessage());
             e.printStackTrace();
             filterChain.doFilter(request, response);
         }

@@ -31,8 +31,6 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Favorite> favorites = new HashSet<>();

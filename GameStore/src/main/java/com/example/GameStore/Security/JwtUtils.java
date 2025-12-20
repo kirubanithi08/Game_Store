@@ -17,9 +17,8 @@ public class JwtUtils {
 
     private final Key key;
 
-
-    private static final long ACCESS_EXPIRATION = 1000L * 60 * 60 * 24; // 24h
-    private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 7; // 7 days
+    private static final long ACCESS_EXPIRATION = 1000L * 60 * 60 * 24;
+    private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
 
     public JwtUtils(@Value("${jwt.secret}") String base64Secret) {
         byte[] keyBytes = Decoders.BASE64.decode(base64Secret);
