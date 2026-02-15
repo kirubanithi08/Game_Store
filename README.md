@@ -1,37 +1,34 @@
-I DEPLOYED MY BACKEND IN RENDER FREE PLAN SO IT TAKES 1 OR 2 MINUTES TO WAKE THE SERVER
+GameStore - Spring Boot Backend API
 
-🎮 GameStore – Spring Boot Backend API
+A RESTful backend API for the GameStore application built using Spring Boot. The backend provides secure authentication, role-based authorization, and game management APIs, serving as the core business layer for the GameStore frontend.
 
-A RESTful backend API for the GameStore application built using Spring Boot.
-The backend provides secure authentication, role-based authorization, and game management APIs, and serves as the core business layer for the GameStore frontend.
+Features
 
-🚀 Features
+JWT-based Authentication
 
-🔐 JWT-based authentication
+Role-Based Access Control (RBAC)
 
-🧑‍💼 Role-Based Access Control (RBAC)
+USER: Browse games, manage wishlist & cart
 
-USER
+ADMIN: Manage games, genres, and users
 
-ADMIN
+User registration & login
 
-👤 User registration & login
+Game management (Admin only)
 
-🕹️ Game management (Admin only)
+Genre management
 
-🗂️ Genre management
+Wishlist APIs
 
-❤️ Wishlist APIs
+Cart APIs
 
-🛒 Cart APIs
+Secure endpoints with Spring Security
 
-🛡️ Secure endpoints with Spring Security
+RESTful API design
 
-📄 RESTful API design
+Database integration using JPA/Hibernate
 
-🗃️ Database integration using JPA/Hibernate
-
-🛠️ Tech Stack
+Tech Stack
 
 Backend: Spring Boot
 
@@ -47,16 +44,9 @@ API Testing: Postman
 
 Java Version: Java 21
 
-🧑‍💼 Role-Based Access Control (RBAC)
-Role	Permissions
-USER	Browse games, manage wishlist & cart
-ADMIN	Manage games, genres, and users
+Authentication & Authorization Flow
 
-Roles are stored in the database and embedded inside the JWT token.
-
-🔐 Authentication & Authorization Flow
-
-User registers or logs in
+User registers or logs in.
 
 Server generates a JWT token containing:
 
@@ -66,18 +56,16 @@ Username
 
 Role(s)
 
-Token is sent to the client
+Token is sent to the client.
 
 Client sends token in Authorization header:
-
 Authorization: Bearer <token>
 
+Spring Security validates the token for every request.
 
-Spring Security validates token for every request
+Access is granted based on user role.
 
-Access is granted based on user role
-
-🛡️ Security Configuration
+Security Configuration
 
 Stateless authentication
 
@@ -87,7 +75,7 @@ Password encryption using BCrypt
 
 Method-level security using @PreAuthorize
 
-Example:
+Example of method-level security:
 
 @PreAuthorize("hasRole('ADMIN')")
 @PostMapping("/games")
@@ -95,7 +83,7 @@ public ResponseEntity<Game> addGame(@RequestBody Game game) {
     return ResponseEntity.ok(gameService.save(game));
 }
 
-📁 Project Structure
+Project Structure
 src/main/java/com/gamestore
 │── controller
 │── service
@@ -106,33 +94,46 @@ src/main/java/com/gamestore
 │── exception
 └── GameStoreApplication.java
 
-🌐 API Endpoints (Sample)
-🔐 Authentication
-Method	Endpoint	Description
-POST	/api/auth/register	Register user
-POST	/api/auth/login	Login user
-🕹️ Games
-Method	Endpoint	Access
-GET	/api/games	USER, ADMIN
-POST	/api/games	ADMIN
-PUT	/api/games/{id}	ADMIN
-DELETE	/api/games/{id}	ADMIN
-❤️ Wishlist
-Method	Endpoint	Access
-GET	/api/wishlist	USER
-POST	/api/wishlist/{gameId}	USER
-🛒 Cart
-Method	Endpoint	Access
-GET	/api/cart	USER
-POST	/api/cart/{gameId}	USER
-⚙️ Installation & Setup
-1️⃣ Clone the repository
+API Endpoints (Sample)
+Authentication
+
+POST /api/auth/register - Register user
+
+POST /api/auth/login - Login user
+
+Games
+
+GET /api/games - Access for USER, ADMIN
+
+POST /api/games - Access for ADMIN
+
+PUT /api/games/{id} - Access for ADMIN
+
+DELETE /api/games/{id} - Access for ADMIN
+
+Wishlist
+
+GET /api/wishlist - Access for USER
+
+POST /api/wishlist/{gameId} - Access for USER
+
+Cart
+
+GET /api/cart - Access for USER
+
+POST /api/cart/{gameId} - Access for USER
+
+Installation & Setup
+
+Clone the repository:
+
 git clone https://github.com/your-username/gamestore-backend.git
 
-2️⃣ Navigate to project directory
+
+Navigate to the project directory:
+
 cd gamestore-backend
 
+Frontend Repository
 
-🔗 Frontend Repository
-
-👉 Frontend (React): https://game-store-lilac-five.vercel.app/
+Frontend (React)
