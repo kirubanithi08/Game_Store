@@ -49,17 +49,20 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<Map<String, String>>> getMe(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body(ApiResponse.error("Missing or invalid Authorization header"));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMe(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Not authenticated"));
         }
 
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtils.extractUsername(token);
+        String username = authentication.getName();
         User user = authService.getUser(username);
 
         return ResponseEntity.ok(ApiResponse.success(
-                Map.of("username", user.getUsername(), "role", user.getRole())
+                Map.of(
+                    "id", user.getId(),
+                    "username", user.getUsername(), 
+                    "role", user.getRole()
+                )
         ));
     }
 

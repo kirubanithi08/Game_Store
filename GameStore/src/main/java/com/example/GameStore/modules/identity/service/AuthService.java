@@ -28,7 +28,7 @@ public class AuthService {
         User user = User.builder()
                 .username(authRequest.username())
                 .password(passwordEncoder.encode(authRequest.password()))
-                .role("USER")
+                .role("User")
                 .build();
 
         return userRepository.save(user);
@@ -58,7 +58,7 @@ public class AuthService {
         User admin = User.builder()
                 .username(authRequest.username())
                 .password(passwordEncoder.encode(authRequest.password()))
-                .role("ADMIN")
+                .role("Admin")
                 .build();
 
         return userRepository.save(admin);
