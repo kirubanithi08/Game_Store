@@ -1,7 +1,8 @@
 package com.example.GameStore.modules.identity.service;
 
-import com.example.GameStore.modules.identity.dto.AuthRequest;
 import com.example.GameStore.modules.identity.dto.AuthResponse;
+import com.example.GameStore.modules.identity.dto.LoginRequest;
+import com.example.GameStore.modules.identity.dto.RegisterRequest;
 import com.example.GameStore.modules.identity.entity.User;
 import com.example.GameStore.modules.identity.repository.UserRepository;
 import com.example.GameStore.modules.identity.security.JwtUtils;
@@ -20,29 +21,30 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
-    public User userRegister(AuthRequest authRequest) {
-        if (userRepository.findByUsername(authRequest.username()).isPresent()) {
+    public User userRegister(RegisterRequest registerRequest) {
+        if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
 
         User user = User.builder()
-                .username(authRequest.username())
-                .password(passwordEncoder.encode(authRequest.password()))
+                .username(registerRequest.username())
+                .email(registerRequest.email())
+                .password(passwordEncoder.encode(registerRequest.password()))
                 .role("User")
                 .build();
 
         return userRepository.save(user);
     }
 
-    public AuthResponse userLogin(AuthRequest authRequest) {
+    public AuthResponse userLogin(LoginRequest loginRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authRequest.username(),
-                        authRequest.password()
+                        loginRequest.email(),
+                        loginRequest.password()
                 )
         );
 
-        User user = userRepository.findByUsername(authRequest.username())
+        User user = userRepository.findByUsername(loginRequest.email())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String accessToken = jwtUtils.generateToken(user.getUsername(), user.getRole());
@@ -50,14 +52,15 @@ public class AuthService {
         return new AuthResponse(accessToken, user.getUsername(), user.getRole());
     }
 
-    public User registerAdmin(AuthRequest authRequest) {
-        if (userRepository.findByUsername(authRequest.username()).isPresent()) {
+    public User registerAdmin(RegisterRequest registerRequest) {
+        if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
             throw new IllegalArgumentException("Admin username already taken");
         }
 
         User admin = User.builder()
-                .username(authRequest.username())
-                .password(passwordEncoder.encode(authRequest.password()))
+                .username(registerRequest.username())
+                .email(registerRequest.email())
+                .password(passwordEncoder.encode(registerRequest.password()))
                 .role("Admin")
                 .build();
 

@@ -1,6 +1,7 @@
 package com.example.GameStore.modules.identity.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -19,6 +20,11 @@ public class User {
     @NotBlank
     @Column(nullable = false, unique = true)
     private String username;
+
+    @NotBlank
+    @Email
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @NotBlank
     @Column(nullable = false)

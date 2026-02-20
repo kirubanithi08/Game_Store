@@ -1,7 +1,8 @@
 package com.example.GameStore.modules.identity.controller;
 
-import com.example.GameStore.modules.identity.dto.AuthRequest;
 import com.example.GameStore.modules.identity.dto.AuthResponse;
+import com.example.GameStore.modules.identity.dto.LoginRequest;
+import com.example.GameStore.modules.identity.dto.RegisterRequest;
 import com.example.GameStore.modules.identity.entity.User;
 import com.example.GameStore.modules.identity.security.JwtUtils;
 import com.example.GameStore.modules.identity.service.AuthService;
@@ -24,14 +25,14 @@ public class AuthController {
     private final JwtUtils jwtUtils;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@Valid @RequestBody AuthRequest authRequest) {
-        authService.userRegister(authRequest);
+    public ResponseEntity<ApiResponse<Void>> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        authService.userRegister(registerRequest);
         return ResponseEntity.ok(ApiResponse.success("User registered successfully"));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody AuthRequest authRequest) {
-        AuthResponse response = authService.userLogin(authRequest);
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
+        AuthResponse response = authService.userLogin(loginRequest);
 
         String refreshToken = jwtUtils.generateRefreshToken(response.username());
 
