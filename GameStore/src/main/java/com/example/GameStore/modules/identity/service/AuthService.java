@@ -22,8 +22,10 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     public User userRegister(RegisterRequest registerRequest) {
-        if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
-            throw new IllegalArgumentException("Username already taken");
+
+
+        if (userRepository.findByEmail(registerRequest.email()).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
         }
 
         User user = User.builder()
@@ -36,7 +38,9 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+
     public AuthResponse userLogin(LoginRequest loginRequest) {
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
@@ -44,13 +48,16 @@ public class AuthService {
                 )
         );
 
-        User user = userRepository.findByUsername(loginRequest.email())
+
+        User user = userRepository.findByEmail(loginRequest.email())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
 
         String accessToken = jwtUtils.generateToken(user.getUsername(), user.getRole());
 
         return new AuthResponse(accessToken, user.getUsername(), user.getRole());
     }
+
 
     public User registerAdmin(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.username()).isPresent()) {

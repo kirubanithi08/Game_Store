@@ -61,7 +61,8 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(
                 Map.of(
                     "id", user.getId(),
-                    "username", user.getUsername(), 
+                    "username", user.getUsername(),
+                    "email",user.getEmail(),
                     "role", user.getRole()
                 )
         ));
