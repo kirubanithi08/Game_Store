@@ -1,6 +1,6 @@
 package com.example.GameStore.modules.identity.controller;
 
-import com.example.GameStore.modules.identity.entity.User;
+import com.example.GameStore.modules.identity.dto.UserResponse;
 import com.example.GameStore.modules.identity.service.UserService;
 import com.example.GameStore.modules.shared.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<User>>> getUsers(
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {

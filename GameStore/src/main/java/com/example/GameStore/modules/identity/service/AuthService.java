@@ -53,7 +53,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
 
-        String accessToken = jwtUtils.generateToken(user.getUsername(), user.getRole());
+        String accessToken = jwtUtils.generateToken(user.getEmail(), user.getRole());
 
         return new AuthResponse(accessToken, user.getUsername(), user.getRole());
     }
@@ -78,12 +78,12 @@ public class AuthService {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    public User getUser(String username) {
-        return userRepository.findByUsername(username)
+    public User getUser(String email) {
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public String generateRefreshToken(String username) {
-        return jwtUtils.generateRefreshToken(username);
+    public String generateRefreshToken(String email) {
+        return jwtUtils.generateRefreshToken(email);
     }
 }

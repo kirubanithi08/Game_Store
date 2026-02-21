@@ -81,10 +81,10 @@ public class AuthController {
                 return ResponseEntity.status(401).body(ApiResponse.error("Invalid refresh token"));
             }
 
-            String username = jwtUtils.extractUsername(refreshToken);
-            User user = authService.getUser(username);
+            String email = jwtUtils.extractEmail(refreshToken);
+            User user = authService.getUser(email);
 
-            String newAccessToken = jwtUtils.generateToken(user.getUsername(), user.getRole());
+            String newAccessToken = jwtUtils.generateToken(user.getEmail(), user.getRole());
 
             return ResponseEntity.ok(ApiResponse.success(
                     new AuthResponse(newAccessToken, user.getUsername(), user.getRole())
