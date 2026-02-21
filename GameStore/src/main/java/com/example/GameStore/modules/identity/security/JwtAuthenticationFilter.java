@@ -30,34 +30,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String method = request.getMethod() == null ? "" : request.getMethod().toUpperCase(Locale.ROOT);
-        String path = request.getRequestURI();
-        if (path == null) path = "";
+        String path = request.getRequestURI() == null ? "" : request.getRequestURI();
 
-        if (path.equals("/") || path.equals("/health") || path.equals("/healthz")) {
-            return true;
-        }
+        if (path.equals("/") || path.equals("/health") || path.equals("/healthz")) return true;
 
-        if (path.matches(".*\\.(css|js|png|jpg|jpeg|webp|svg)$")) {
-            return true;
-        }
+        if (path.matches(".*\\.(css|js|png|jpg|jpeg|webp|svg)$")) return true;
 
         if (path.equals("/api/auth/login") ||
                 path.equals("/api/auth/register") ||
-                path.equals("/api/auth/refresh")) {
-            return true;
-        }
+                path.equals("/api/auth/refresh")) return true;
 
-        if (method.equals("OPTIONS") || method.equals("HEAD")) {
-            return true;
-        }
+        if (method.equals("OPTIONS") || method.equals("HEAD")) return true;
 
         if (method.equals("GET")) {
-            if (path.startsWith("/api/games/") && !path.matches(".*/(edit|admin)$")) {
-                return true;
-            }
-            if (path.startsWith("/api/genres")) {
-                return true;
-            }
+            if (path.startsWith("/api/games/") && !path.matches(".*/(edit|admin)$")) return true;
+            if (path.startsWith("/api/genres")) return true;
         }
 
         return false;
@@ -70,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
 
         try {
-            final String authHeader = request.getHeader("Authorization");
+            String authHeader = request.getHeader("Authorization");
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
@@ -83,24 +70,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String username = jwtUtils.extractUsername(token);
+            String username = jwtUtils.extractEmail(token);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtils.validateToken(token, userDetails.getUsername())) {
                     String role = jwtUtils.extractRole(token);
-                    if (role == null) role = "USER";
-                    
-                    String mappedRole = role;
-                    if (role.equalsIgnoreCase("Admin")) {
-                        mappedRole = "ROLE_ADMIN";
-                    } else if (role.equalsIgnoreCase("User")) {
-                        mappedRole = "ROLE_USER";
-                    } else if (!role.startsWith("ROLE_")) {
-                        mappedRole = "ROLE_" + role.toUpperCase();
-                    }
-                    
+                    String mappedRole = mapRole(role);
+
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
@@ -113,11 +91,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
-
         } catch (Exception e) {
             log.error("Error in JwtAuthenticationFilter: ", e);
+        } finally {
             filterChain.doFilter(request, response);
         }
+    }
+
+
+    private String mapRole(String role) {
+        if (role == null || role.isBlank()) return "ROLE_USER";
+
+        role = role.trim();
+
+        return switch (role.toLowerCase()) {
+            case "admin" -> "ROLE_ADMIN";
+            case "user" -> "ROLE_USER";
+            default -> role.startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
+        };
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -18,18 +19,16 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String role = user.getRole();
-        if (role != null) {
-            if (role.equalsIgnoreCase("Admin")) {
-                role = "ROLE_ADMIN";
-            } else if (role.equalsIgnoreCase("User")) {
-                role = "ROLE_USER";
-            } else if (!role.startsWith("ROLE_")) {
-                role = "ROLE_" + role.toUpperCase();
-            }
-        } else {
-            role = "ROLE_USER";
-        }
+        String role = Optional.ofNullable(user.getRole())
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .map(r -> switch (r) {
+                    case "admin" -> "ROLE_ADMIN";
+                    case "user" -> "ROLE_USER";
+                    default -> r.startsWith("role_") ? r.toUpperCase() : "ROLE_" + r.toUpperCase();
+                })
+                .orElse("ROLE_USER");
+
         return List.of(new SimpleGrantedAuthority(role));
     }
 
