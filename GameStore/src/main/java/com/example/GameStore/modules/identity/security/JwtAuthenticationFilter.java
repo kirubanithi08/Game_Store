@@ -50,53 +50,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return false;
     }
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws IOException, ServletException {
+   
+   @Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain)
+        throws IOException, ServletException {
 
-        try {
-            String authHeader = request.getHeader("Authorization");
+    try {
+        String authHeader = request.getHeader("Authorization");
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            String token = authHeader.substring(7).trim();
-            if (token.isEmpty()) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            String username = jwtUtils.extractEmail(token);
-
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                if (jwtUtils.validateToken(token, userDetails.getUsername())) {
-                    String role = jwtUtils.extractRole(token);
-                    String mappedRole = mapRole(role);
-
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority(mappedRole))
-                            );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Error in JwtAuthenticationFilter: ", e);
-        } finally {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
+            return;
         }
+
+        String token = authHeader.substring(7).trim();
+        if (token.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String username = jwtUtils.extractEmail(token);
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            if (jwtUtils.validateToken(token, userDetails.getUsername())) {
+                String role = jwtUtils.extractRole(token);
+                String mappedRole = mapRole(role);
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                List.of(new SimpleGrantedAuthority(mappedRole))
+                        );
+
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+
+    } catch (Exception e) {
+        log.error("Error in JwtAuthenticationFilter: ", e);
+        filterChain.doFilter(request, response);
     }
+}
 
 
     private String mapRole(String role) {
